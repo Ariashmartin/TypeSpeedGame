@@ -1,20 +1,20 @@
+import time
 import typespeed.jugadores
-
+import typespeed.palabraRandom
 
 print("BIENVENIDO AL TIMESPEED GAME!\n")
 
+
 def newOrLoad ():
     """
-    Funcion inicial en la que se determinara si se comienza con una partida nueva o con una guardada
+    Funcion en la que se determinara si se comienza con una partida nueva o con una guardada
     :return: 'partida' varialble entera que determinará como continuará el juego
     """
-
     partida=input("¿Quiere empezar una nueva partida, o continuar una partida anterior?\n1.PARTIDA NUEVA\t2.CARGAR PARTIDA\n>>")
     while int(partida) < 1 or int(partida) > 2:
         partida=input("\nRespuesta incorrecta, elija entre 1.PARTIDA NUEVA o 2.CARGAR PARTIDA\n>>")
-
     return int(partida)
-#print(newOrLoad())
+
 
 def cantPlayers ():
     """
@@ -30,8 +30,11 @@ def cantPlayers ():
         print("\nCantidad superior a la maxima")
         return cantPlayers()
     else:
+        addCant = open("progress.txt", "a+")
+        addCant.write("Jugadores: " + str(cantidad)+"\n")
+        addCant.close()
         return cantidad
-#print(cantPlayers())
+
 
 def dataPlayer(n):
     """
@@ -46,14 +49,14 @@ def dataPlayer(n):
         print(f"\nSi {nombre} es humano ingrese 1, si es bot (CPU) ingrese 2")
         condition=int(input("\n>>"))
         while condition <1 or condition >2:
-            condition=input(f"\nRespuesta incorrecta, indique si {nombre} es 1.humano o 2.bot")
+            condition=int(input(f"\nRespuesta incorrecta, indique si {nombre} es 1.humano o 2.bot"))
 
         guardado = open("progress.txt", "a+")
         dictPlayer=str(typespeed.jugadores.dictPlayer(nombre,condition))
         guardado.write(dictPlayer+"\n")
         guardado.close()
         i+=1
-#print(dataPlayer(3))
+
 
 def gameMode ():
     """
@@ -65,5 +68,49 @@ def gameMode ():
     while dif < 1 or dif > 4:
         dif=int(input("\nRespuesta incorrecta\nIngrese la dificultad que desea jugar:\n1.Facil\t2.Normal\n3.Dificil\t4.Typespeed\n>>"))
 
+    addDif=open("progress.txt","w")
+    addDif.write("MODO DE JUEGO"+str(dif)+"\n")
     return dif
-print(gameMode())
+
+
+def startGame():
+    """
+    Funcion que llevara todas las demas para poder correr el juego
+    :return: None
+    """
+
+    partida=newOrLoad()
+
+    if partida==1: #Al tomar la decicion de jugar nueva partida...
+
+        resetSave=open("progress.txt","w").truncate() #Limpia el archivo donde se guardo cualquier informacion de partidas anteriores
+
+        cantidad = cantPlayers()
+        dataPlayer(cantidad)
+        dif = gameMode()
+        jugador = open("progress.txt", "r")
+        vidas = 3
+        lista_game = typespeed.palabraRandom.listaSegunDif(dif)
+        for i in range(cantidad): #Repite la los turnos por la cantidad de jugadores
+            puntos=0
+            while vidas !=0:    #Repite la peticion de palabras hasta que las vidas sean 0
+                print("Pasamos con",vidas,"vidas","y tus puntos son:", puntos)
+                start_time = time.time()
+
+                palabra = typespeed.palabraRandom.aleatoria(lista_game)
+
+                print("La palabra es:",palabra)
+                respuesta=input(">>")
+                if palabra!=respuesta and time.time()-start_time<5:
+                    vidas -= 1
+
+                if palabra==respuesta and time.time()-start_time<5:
+                    puntos += len(palabra)
+
+                if time.time()-start_time>5:
+                    vidas -= 1
+
+            if vidas==0:
+                print(f"Jugador {i+1}, consiguio {puntos} puntos")
+
+startGame()
