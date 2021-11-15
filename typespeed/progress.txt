@@ -1,1 +1,4 @@
-MODO DE JUEGO3
+Jugadores: 2
+name-cond-5-0
+name-cond-5-0
+MODO DE JUEGO 1
